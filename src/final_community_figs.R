@@ -31,30 +31,67 @@ prev_year_div <- left_join(next_year, uninvaded_sites)
 
 # binomial models ==============================================================
 
-# non-trivial time period per mod
+# many minutes per mod
 ma0<-all_scales %>%
   mutate(invaded = ifelse(invaded=="invaded",1,0)) %>%
   lme4::glmer(invaded ~ nspp_native +(nspp_native|scale)+ (1|site), 
               data = ., family = "binomial")
 
-# this is the ggplot model, basically... not sure how to compare glm and glmer
+# this is the ggplot model, basically... 
 ma1<-all_scales %>%
   mutate(invaded = ifelse(invaded=="invaded",1,0)) %>%
   glm(invaded ~ nspp_native * scale, 
               data = ., family = "binomial")
 #not sure what to think about this stuff
-vif(m0)
-vif(m1)
-AIC(m0,m1)
-anova(m0,m1)
+vif(ma0)
+vif(ma1)
+AIC(ma0,ma1)
+anova(ma0,ma1)
 
 mc1<- prev_year_div %>%
-  lme4::glmer(invaded ~ nspp_native*scale +(1|site), 
+  filter(scale == "1m") %>%
+  lme4::glmer(invaded ~ nspp_native + (nspp_native|site), 
               data = ., family = "binomial")
+mc1_i<- prev_year_div %>%
+  filter(scale == "1m") %>%
+  lme4::glmer(invaded ~ nspp_native + (1|site), 
+              data = ., family = "binomial")
+AIC(mc1, mc1_i)
+anova(mc1, mc1_i)
+
+summary(mc1)
+Anova(mc1)
+
+prev_year_div %>%
+  filter(scale == "1m") %>%
+  ggplot(aes(x=nspp_native, y=invaded, color=site)) +
+  geom_line(aes(y=(predict(mc1, type="response")))) +
+  theme_classic()
+
+mc10<- prev_year_div %>%
+  filter(scale == "10m") %>%
+  lme4::glmer(invaded ~ nspp_native + (nspp_native|site), 
+              data = ., family = "binomial")
+summary(mc10)
+Anova(mc10)
+
+mc100<- prev_year_div %>%
+  filter(scale == "100m") %>%
+  lme4::glmer(invaded ~ nspp_native + (nspp_native|site), 
+              data = ., family = "binomial")
+summary(mc100)
+
+mcplot<- prev_year_div %>%
+  filter(scale == "plot") %>%
+  lme4::glmer(invaded ~ nspp_native + (nspp_native|site), 
+              data = ., family = "binomial")
+summary(mcplot)
+
 
 mc0<-prev_year_div%>%
-  mutate(nspp_native = scale(nspp_native)) %>%
-  glm(invaded ~ nspp_native*scale, 
+  filter(scale == "plot") %>%
+  # mutate(nspp_native = scale(nspp_native)) %>%
+  glm(invaded ~ nspp_native*site, 
               data = ., family = "binomial")
 
 # inv_mod<- lme4::glmer(invaded ~ nspp_native*scale +(1|site), 
@@ -73,8 +110,10 @@ mc0<-prev_year_div%>%
 mb0<-all_scales %>%
   glm(nspp_exotic ~ nspp_native * scale, 
       data = ., family = "quasipoisson")
-#not sure what to think about this stuff
+
 summary(mb0)
+Anova(mb0)
+
 md0<-prev_year_div%>%
   glm(next_nspp_exotic ~ nspp_native*scale, 
       data = ., family = "quasipoisson")
