@@ -6,25 +6,11 @@ library(vegan)
 library(neondiversity) 
 options(stringsAsFactors = FALSE)
 
-####################
-# downloading data #
-####################
-sites <- c("SRER", "ONAQ", "MOAB", "JORN")
-lut_sites <- c("SRER" = "Santa Rita",
-               "ONAQ" = "Onaqui",
-               "MOAB" = "Moab",
-               "JORN" = "Jornada")
-# if statement helps avoid downloading over and over
-if(!file.exists("data/diversity.RDS")){
-  loadByProduct(dpID = "DP1.10058.001", 
-                site = sites, 
-                check.size = F) -> x
-  saveRDS(x, "data/diversity.RDS")}else{
-x<-readRDS("data/diversity.RDS")}
-
 #######################
 # using neondiversity #
 #######################
+
+x<-readRDS("data/diversity.RDS")
 
 plot_level <- get_diversity_info(neon_div_object = x, scale = "plot")
 sp_level_1 <- get_diversity_info(x, "1m")

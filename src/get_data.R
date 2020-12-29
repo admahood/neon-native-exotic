@@ -1,6 +1,8 @@
 # script to download data
 library(tidyverse)
 library(sf)
+library(neondiversity)
+library(neonUtilities)
 
 # neon plots ===================================================================
 url <- "https://www.neonscience.org/sites/default/files/All_NEON_TOS_Plots_V8.zip"
@@ -21,3 +23,16 @@ sites <- read_csv(file.path(exdir,
 
 write_csv(sites, "data/all_terrestrial_sites.csv")
 
+# getting alllll the diversity data ============================================
+all_sites <- pull(sites, site)
+
+if(!file.exists("data/diversity.RDS")){
+  
+  loadByProduct(dpID = "DP1.10058.001", 
+                site = all_sites, 
+                check.size = F) -> x
+  saveRDS(x, "data/diversity.RDS")
+  
+  }else{
+    x<-readRDS("data/diversity.RDS")
+    }
