@@ -1,19 +1,19 @@
 # final diversity/scale figures and models
-source("R/diversity_data_prep.R")
+source("R/get_data.R")
 library(lme4)
 library(ggpubr)
 library(ggthemes)
 library(car)
-library(ggsci)
+# library(ggsci)
 
 # data mongering ===============================================================
+
 
 uninvaded_sites <- all_scales %>% 
   mutate(year = as.numeric(year),
          uniqueid = paste0(year+1,plotID,scale,subplotID, site)) %>%
   filter(nspp_exotic == 0) %>% 
-  dplyr::select(year, plotID, scale, subplotID, site,uniqueid, 
-                shannon_total, nspp_total, shannon_native, nspp_native)
+  dplyr::select(year, plotID, scale, subplotID, site,uniqueid, nspp_total, nspp_native)
 
 uniqueids <- uninvaded_sites$uniqueid
 
@@ -21,21 +21,20 @@ next_year<-all_scales %>%
   mutate(year = as.numeric(year),
          uniqueid = paste0(year,plotID,scale,subplotID, site))%>%
   filter(uniqueid %in% uniqueids) %>%
-  dplyr::select(uniqueid, next_shannon_total=shannon_total, 
+  dplyr::select(uniqueid, 
                 next_nspp_total=nspp_total, 
                 next_nspp_exotic = nspp_exotic,
-                next_shannon_native=shannon_native, 
-                next_nspp_native = nspp_native,
-                next_shannon_exotic = shannon_exotic) %>%
+                next_nspp_native = nspp_native) %>%
   mutate(invaded = ifelse(next_nspp_exotic > 0, 1, 0))
 
 prev_year_div <- left_join(next_year, uninvaded_sites)
 
 # binomial models ==============================================================
 
+# non-trivial time period per mod
 ma0<-all_scales %>%
   mutate(invaded = ifelse(invaded=="invaded",1,0)) %>%
-  lme4::glmer(invaded ~ nspp_native * scale+ (1|site), 
+  lme4::glmer(invaded ~ nspp_native +(nspp_native|scale)+ (1|site), 
               data = ., family = "binomial")
 
 # this is the ggplot model, basically... not sure how to compare glm and glmer
