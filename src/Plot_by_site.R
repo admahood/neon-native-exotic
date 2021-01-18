@@ -1,4 +1,4 @@
-# Plot by site for all scales aand then focused at the 1m scale
+# Plot by site for all scales and then focused at the 1m scale
 
 # Plot all sites individually
 for (ss in 1:length(unique(all_scales$site))){
