@@ -5,7 +5,8 @@
 # Are there any invaders across the entire site (invader supply, though for terrestrial may be less of an issue)
 # Evaluate number of Unknowns
 site_dat=read.csv(file = "data/NEON_Field_Site_Metadata.csv")
-site_dat$main_nlcd=gsub(x = paste(site_dat$field_dominant_nlcd_classes),pattern = "\\|.+",replacement = "")
+# site_dat$main_nlcd=gsub(x = paste(site_dat$field_dominant_nlcd_classes),pattern = "\\|.+",replacement = "")
+
 for (ss in 1:length(unique(prev_year_div$site))){
   print(ss)
 print(ggplot(prev_year_div[prev_year_div$site==unique(prev_year_div$site)[ss]&prev_year_div$scale!="plot",], 
@@ -98,7 +99,9 @@ for (ss in 1:length(unique(all_scales$site))){
 # Calculate local scale NERR for each site to compare between habitat types etc.
 
 site_exotics=aggregate(all_sub_plot_div_data$nspp_exotic,by = list(all_sub_plot_div_data$site),FUN=sum)
+names(site_exotics)=c("site","exotic_sum")
 site_mean_nat=aggregate(all_sub_plot_div_data$nspp_native,by = list(all_sub_plot_div_data$site),FUN=mean)
+names(site_mean_nat)=c("site","native_mean")
 
 aggregate(all_scales$nspp_exotic[all_scales$scale=="1m"&all_scales$year==2018],by=list(all_scales$site[all_scales$scale=="1m"&all_scales$year==2018]),FUN=sum)
 
@@ -110,26 +113,27 @@ all_sub_plot_div_data[which(all_sub_plot_div_data$plotID=="BART_006"),]
 all_scales[all_scales$scale=="1m"&all_scales$year==2018&all_scales$plotID=="BART_006",]
 
 
-use_sites=site_exotics$Site[which(site_exotics$exotic_sum>0)]
+use_sites=site_exotics$site[which(site_exotics$exotic_sum>0)]
 inv_site_sub_plot_div_data=all_sub_plot_div_data[which(all_sub_plot_div_data$site%in%use_sites),]
 NERR_coefs=data.frame(site=use_sites,tot_coef=NA,tot_tval=NA,tot_pval=NA,nat_coef=NA,nat_tval=NA,nat_pval=NA)
-NERR_coefs$mean_nat=site_mean_nat$x[which(site_exotics$exotic_sum>0)]
-NERR_coefs$main_nlcd=site_dat$main_nlcd[match(NERR_coefs$site,site_dat$field_site_id)]
+NERR_coefs$mean_nat=site_mean_nat$native_mean[which(site_exotics$exotic_sum>0)]
+# NERR_coefs$main_nlcd=site_dat$main_nlcd[match(NERR_coefs$site,site_dat$field_site_id)]
 
+NERR_coefs=cbind(NERR_coefs,site_nlcd[match(NERR_coefs$site,site_nlcd$site),-1])
 
 par(mfrow=c(3,4))
-for (ss in 1:length(unique(inv_site_sub_plot_div_data$site))){
-  plot(inv_site_sub_plot_div_data$nspp_exotic[inv_site_sub_plot_div_data$site==unique(inv_site_sub_plot_div_data$site)[ss]]~inv_site_sub_plot_div_data$nspp_total[inv_site_sub_plot_div_data$site==unique(inv_site_sub_plot_div_data$site)[ss]],main=unique(inv_site_sub_plot_div_data$site)[ss],xlab="total richness",ylab="exotic richness")
-  abline(lm(inv_site_sub_plot_div_data$nspp_exotic[inv_site_sub_plot_div_data$site==unique(inv_site_sub_plot_div_data$site)[ss]]~inv_site_sub_plot_div_data$nspp_total[inv_site_sub_plot_div_data$site==unique(inv_site_sub_plot_div_data$site)[ss]]),col=ss)
-  
-  tot_mod_res=summary(lm(inv_site_sub_plot_div_data$nspp_exotic[inv_site_sub_plot_div_data$site==unique(inv_site_sub_plot_div_data$site)[ss]]~inv_site_sub_plot_div_data$nspp_total[inv_site_sub_plot_div_data$site==unique(inv_site_sub_plot_div_data$site)[ss]]),col=ss)
+for (ss in 1:length(use_sites)){
+  # plot(inv_site_sub_plot_div_data$nspp_exotic[inv_site_sub_plot_div_data$site==use_sites[ss]]~inv_site_sub_plot_div_data$nspp_total[inv_site_sub_plot_div_data$site==use_sites[ss]],main=use_sites[ss],xlab="total richness",ylab="exotic richness")
+  # abline(lm(inv_site_sub_plot_div_data$nspp_exotic[inv_site_sub_plot_div_data$site==use_sites[ss]]~inv_site_sub_plot_div_data$nspp_total[inv_site_sub_plot_div_data$site==use_sites[ss]]),col=ss)
+  # 
+  tot_mod_res=summary(lm(inv_site_sub_plot_div_data$nspp_exotic[inv_site_sub_plot_div_data$site==use_sites[ss]]~inv_site_sub_plot_div_data$nspp_total[inv_site_sub_plot_div_data$site==use_sites[ss]]),col=ss)
   
   NERR_coefs[ss,2:4]=tot_mod_res$coefficients[2,c("Estimate","t value","Pr(>|t|)")]
   
-  plot(inv_site_sub_plot_div_data$nspp_exotic[inv_site_sub_plot_div_data$site==unique(inv_site_sub_plot_div_data$site)[ss]]~inv_site_sub_plot_div_data$nspp_native[inv_site_sub_plot_div_data$site==unique(inv_site_sub_plot_div_data$site)[ss]],main=unique(inv_site_sub_plot_div_data$site)[ss],xlab="native richness",ylab="exotic richness")
-  abline(lm(inv_site_sub_plot_div_data$nspp_exotic[inv_site_sub_plot_div_data$site==unique(inv_site_sub_plot_div_data$site)[ss]]~inv_site_sub_plot_div_data$nspp_native[inv_site_sub_plot_div_data$site==unique(inv_site_sub_plot_div_data$site)[ss]]),col=ss)
+  plot(inv_site_sub_plot_div_data$nspp_exotic[inv_site_sub_plot_div_data$site==use_sites[ss]]~inv_site_sub_plot_div_data$nspp_native[inv_site_sub_plot_div_data$site==use_sites[ss]],main=use_sites[ss],xlab="native richness",ylab="exotic richness")
+  abline(lm(inv_site_sub_plot_div_data$nspp_exotic[inv_site_sub_plot_div_data$site==use_sites[ss]]~inv_site_sub_plot_div_data$nspp_native[inv_site_sub_plot_div_data$site==use_sites[ss]]),col=ss)
   
-  nat_mod_res=summary(lm(inv_site_sub_plot_div_data$nspp_exotic[inv_site_sub_plot_div_data$site==unique(inv_site_sub_plot_div_data$site)[ss]]~inv_site_sub_plot_div_data$nspp_native[inv_site_sub_plot_div_data$site==unique(inv_site_sub_plot_div_data$site)[ss]]),col=ss)
+  nat_mod_res=summary(lm(inv_site_sub_plot_div_data$nspp_exotic[inv_site_sub_plot_div_data$site==use_sites[ss]]~inv_site_sub_plot_div_data$nspp_native[inv_site_sub_plot_div_data$site==use_sites[ss]]),col=ss)
   
   NERR_coefs[ss,5:7]=nat_mod_res$coefficients[2,c("Estimate","t value","Pr(>|t|)")]
 }
@@ -138,7 +142,31 @@ plot(NERR_coefs$nat_coef~NERR_coefs$mean_nat,cex=abs(NERR_coefs$nat_tval/2))
 abline(lm(NERR_coefs$nat_coef~NERR_coefs$mean_nat))
 summary(lm(NERR_coefs$nat_coef~NERR_coefs$mean_nat))
 
-plot(NERR_coefs$nat_coef~NERR_coefs$,cex=abs(NERR_coefs$nat_tval/2))
-plot(NERR_coefs$nat_coef~as.factor(NERR_coefs$main_nlcd))
-NERR_coefs$main_nlcd=as.factor(NERR_coefs$main_nlcd)
+plot(NERR_coefs$nat_coef~NERR_coefs$mean_nat,cex=abs(NERR_coefs$nat_tval/2))
+
+plot(NERR_coefs$nat_coef~NERR_coefs$main_nlcd)
 summary(lm(NERR_coefs$nat_coef~NERR_coefs$main_nlcd))
+summary(aov(NERR_coefs$nat_coef~NERR_coefs$main_nlcd))
+
+
+plot(NERR_coefs$nat_coef~NERR_coefs$prop_grasslandHerbaceous)
+abline(lm(NERR_coefs$nat_coef~NERR_coefs$prop_grasslandHerbaceous),col=2)
+summary(lm(NERR_coefs$nat_coef~NERR_coefs$prop_grasslandHerbaceous))
+
+all_forest=(NERR_coefs$prop_mixedForest+NERR_coefs$prop_evergreenForest+NERR_coefs$prop_deciduousForest)
+all_grass=(NERR_coefs$prop_grasslandHerbaceous+NERR_coefs$prop_pastureHay+NERR_coefs$prop_cultivatedCrops)
+
+plot(NERR_coefs$nat_coef~all_grass)
+abline(lm(NERR_coefs$nat_coef~all_grass,col=2))
+summary(lm(NERR_coefs$nat_coef~all_grass))
+
+
+plot(NERR_coefs$nat_coef~all_forest)
+abline(lm(NERR_coefs$nat_coef~all_forest,col=2))
+summary(lm(NERR_coefs$nat_coef~all_forest))
+
+plot(NERR_coefs$nat_coef~NERR_coefs$tot_rich,type="p")
+abline(lm(NERR_coefs$nat_coef~NERR_coefs$tot_rich,type="p"))
+summary(lm(NERR_coefs$nat_coef~NERR_coefs$tot_rich,type="p"))
+text(NERR_coefs$nat_coef~NERR_coefs$tot_rich,labels=paste(NERR_coefs$site))
+dev.off()
