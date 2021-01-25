@@ -18,8 +18,10 @@ for(pp in 1:length(all_plots)){
   all_sub_plot_div_data$nspp_exotic[pp]=sum(curr_sub$nativeStatusCode=="I")
   all_sub_plot_div_data$nspp_total[pp]=length(unique(curr_sub$taxonID))
   all_sub_plot_div_data$nspp_unk[pp]=sum(curr_sub$nativeStatusCode=="UNK")
+  all_sub_plot_div_data$tot_cover[pp]=sum(curr_sub$percentCover)
+  all_sub_plot_div_data$tot_cover[pp]=sum(curr_sub$percentCover)
   
-    
+  
 }
 
 all_sub_plot_div_data[which(is.na(all_sub_plot_div_data[,1])),]
