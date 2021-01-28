@@ -76,5 +76,24 @@ for(ss in 1:length(all_sites)){
 }
 site_nlcd$main_nlcd=as.factor(site_nlcd$main_nlcd)
 
+#############################
+# Site level diversity
+names(neon_div_object)
 
+full_cover_10m=full_on_cover
+full_cover_1m=full_on_cover
+full_cover_100m=full_on_cover
+full_cover_plot=full_on_cover
 
+plot_level <- get_diversity_info(neon_div_object = x, scale = "10m")
+print(full_on_cover[full_on_cover$plotID=="ABBY_001",],n=Inf)
+unique(full_on_cover[full_on_cover$plotID=="ABBY_001","taxonID"])
+nrow(unique(full_on_cover[full_on_cover$plotID=="ABBY_001","taxonID"]))
+
+site_dat$tot_rich=NA
+plot_rich=list()
+for(ss in 1:length(all_sites)){
+  plot_rich[[ss]]=sort(unique(full_cover_plot$scientificName[which(full_cover_plot$site==all_sites[ss])]))
+  
+  site_dat$tot_rich[match(all_sites[ss],site_dat$field_site_id)]=length(unique(full_cover_plot$taxonID[which(full_cover_plot$site==all_sites[ss])]))
+  }
