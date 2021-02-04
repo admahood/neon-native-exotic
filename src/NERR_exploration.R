@@ -1,4 +1,5 @@
 # Script for running a number of NERR related analyses
+library(car)
 
 # Things to account for:
 # Are there uninvaded plots at the site
@@ -203,10 +204,14 @@ summary(lm(uber_dat$nat_coef~uber_dat$prop_Grasslands_Herbaceous))
 
 all_forest=(uber_dat$prop_Mixed_Forest+uber_dat$prop_Evergreen_Forest+uber_dat$prop_Deciduous_Forest)
 all_grass=(uber_dat$prop_grasslandHerbaceous+uber_dat$prop_Pasture_Hay+uber_dat$prop_Cultivated_crops)
+
+
 plot(uber_dat$nat_coef~uber_dat$mean_cover)
 abline(lm(uber_dat$nat_coef~uber_dat$mean_cover),col=2)
 summary(lm(uber_dat$nat_coef~uber_dat$mean_cover))
-
+mod=lm(uber_dat$nat_coef~uber_dat$mean_cover+uber_dat$tot_rich)
+summary(mod)
+crPlots(mod)
 
 plot(uber_dat$nat_coef~uber_dat$tot_rich)
 abline(lm(uber_dat$nat_coef~uber_dat$tot_rich),col=2)
