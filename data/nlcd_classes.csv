@@ -1,0 +1,22 @@
+﻿Level_1_class,Class_value,Level_2_class
+Water,11,Open Water
+Water,12,Perennial Ice_Snow
+Developed,21,Developed_Open space
+Developed,22,Developed_Low intensity
+Developed,23,Developed_Medium intensity
+Developed,24,Developed_High intensity
+Barren,31,Bare Rock_Sand_Clay
+Forrested Upland,41,Deciduous Forest
+Forrested Upland,42,Evergreen Forest
+Forrested Upland,43,Mixed Forest
+Shrubland,51,Dwarf scrub
+Shrubland,52,Shrub_Scrub
+Herbaceous Upland Natural_Semi_natural Vegetation,71,Grasslands_Herbaceous
+Herbaceous Upland Natural_Semi_natural Vegetation,72,Sedge_Herbaceous
+Herbaceous Upland Natural_Semi_natural Vegetation,73,Lichens
+Herbaceous Upland Natural_Semi_natural Vegetation,73,Moss
+Herbaceous Planted_Cultivated,81,Pasture_Hay
+Herbaceous Planted_Cultivated,82,Cultivated crops
+Herbaceous Planted_Cultivated,85,Urban_Recreational Grasses
+Wetlands,90,Woody Wetlands
+Wetlands,95,Emergent Herbaceous Wetlands

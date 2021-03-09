@@ -138,15 +138,15 @@ NERR_coefs=cbind(NERR_coefs,site_nlcd[match(NERR_coefs$site,site_nlcd$site),-1])
 
 par(mfrow=c(3,4))
 for (ss in 1:length(use_sites)){
-  plot(inv_site_sub_plot_div_data$nspp_exotic[inv_site_sub_plot_div_data$site==use_sites[ss]]~inv_site_sub_plot_div_data$nspp_total[inv_site_sub_plot_div_data$site==use_sites[ss]],main=use_sites[ss],xlab="total richness",ylab="exotic richness")
-  tot_mod_res=summary(lm(inv_site_sub_plot_div_data$nspp_exotic[inv_site_sub_plot_div_data$site==use_sites[ss]]~inv_site_sub_plot_div_data$nspp_total[inv_site_sub_plot_div_data$site==use_sites[ss]]),col=ss)
-
-  if(tot_mod_res$coefficients[2,"Pr(>|t|)"]<0.05){
-  abline(lm(inv_site_sub_plot_div_data$nspp_exotic[inv_site_sub_plot_div_data$site==use_sites[ss]]~inv_site_sub_plot_div_data$nspp_total[inv_site_sub_plot_div_data$site==use_sites[ss]]),col=ss)
-  }
-    
-  NERR_coefs[ss,2:4]=tot_mod_res$coefficients[2,c("Estimate","t value","Pr(>|t|)")]
-  
+  # plot(inv_site_sub_plot_div_data$nspp_exotic[inv_site_sub_plot_div_data$site==use_sites[ss]]~inv_site_sub_plot_div_data$nspp_total[inv_site_sub_plot_div_data$site==use_sites[ss]],main=use_sites[ss],xlab="total richness",ylab="exotic richness")
+  # tot_mod_res=summary(lm(inv_site_sub_plot_div_data$nspp_exotic[inv_site_sub_plot_div_data$site==use_sites[ss]]~inv_site_sub_plot_div_data$nspp_total[inv_site_sub_plot_div_data$site==use_sites[ss]]),col=ss)
+  # 
+  # if(tot_mod_res$coefficients[2,"Pr(>|t|)"]<0.05){
+  # abline(lm(inv_site_sub_plot_div_data$nspp_exotic[inv_site_sub_plot_div_data$site==use_sites[ss]]~inv_site_sub_plot_div_data$nspp_total[inv_site_sub_plot_div_data$site==use_sites[ss]]),col=ss)
+  # }
+  #   
+  # NERR_coefs[ss,2:4]=tot_mod_res$coefficients[2,c("Estimate","t value","Pr(>|t|)")]
+  # 
   plot(inv_site_sub_plot_div_data$nspp_exotic[inv_site_sub_plot_div_data$site==use_sites[ss]]~inv_site_sub_plot_div_data$nspp_native[inv_site_sub_plot_div_data$site==use_sites[ss]],main=use_sites[ss],xlab="native richness",ylab="exotic richness")
   
   nat_mod_res=summary(lm(inv_site_sub_plot_div_data$nspp_exotic[inv_site_sub_plot_div_data$site==use_sites[ss]]~inv_site_sub_plot_div_data$nspp_native[inv_site_sub_plot_div_data$site==use_sites[ss]]),col=ss)
@@ -216,6 +216,11 @@ crPlots(mod)
 plot(uber_dat$nat_coef~uber_dat$tot_rich)
 abline(lm(uber_dat$nat_coef~uber_dat$tot_rich),col=2)
 summary(lm(uber_dat$nat_coef~uber_dat$tot_rich))
+
+pred=(uber_dat$prop_evergreenForest+uber_dat$prop_deciduousForest+uber_dat$prop_Mixed_Forest)
+plot(uber_dat$nat_coef~pred)
+abline(lm(uber_dat$nat_coef~pred),col=2)
+summary(lm(uber_dat$nat_coef~pred))
 
 
 summary(lm(uber_dat$nat_coef~uber_dat$mean_cover+uber_dat$mean_nat))
