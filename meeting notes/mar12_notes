@@ -1,0 +1,22 @@
+potential explainers
+- soil fertility
+- invasion
+- mean annual
+- richeness and total cover were informative
+
+
+
+- usda plants api - vs unknowns
+ - usda plants can also grab functional groups
+- more site-level stuff
+
+Main Q at this point
+why NERR relationships positive vs negative?
+site level by default
+
+
+incorporate exotic legacy?
+maybe exotic dominance is a proxy of time since invasion
+calculate total native cover and total invasive cover
+e.g. what is the most dominant exotic species or two, and what their relative cover
+also prevalence (how many plots is it at)
