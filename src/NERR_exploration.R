@@ -227,3 +227,8 @@ summary(lm(uber_dat$nat_coef~uber_dat$mean_cover+uber_dat$mean_nat))
 
 uber_dat$siteName[order(uber_dat$nat_coef,decreasing = F)]
 sort(uber_dat$nat_coef,decreasing = F)
+
+
+plot(uber_dat$prop_grasslandHerbaceous~uber_dat$poaceae_cover)
+abline(lm(uber_dat$prop_grasslandHerbaceous~uber_dat$poaceae_cover),col=2)
+summary(lm(uber_dat$prop_grasslandHerbaceous~uber_dat$poaceae_cover))
