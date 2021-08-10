@@ -62,3 +62,6 @@ sp_level_100<- sp_level_100%>%
 
 all_scales <- rbind(plot_level, sp_level_1, sp_level_10, sp_level_100)
 saveRDS(all_scales, "data/all_scales.RDS")
+
+# global aridity index 
+# downloaded manually from: https://figshare.com/articles/dataset/Global_Aridity_Index_and_Potential_Evapotranspiration_ET0_Climate_Database_v2/7504448/3

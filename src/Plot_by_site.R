@@ -1,5 +1,5 @@
 # Plot by site for all scales and then focused at the 1m scale
-
+all_scales <- readRDS("data/all_scales.RDS")
 # Plot all sites individually
 for (ss in 1:length(unique(all_scales$site))){
   print(ss)

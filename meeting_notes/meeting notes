@@ -1,0 +1,46 @@
+MEETING NOTES
+
+Adam individual work 6/25/2021 =================================================
+
+downloaded prism climate data (although probably better to use the direct measurements from neon)
+downloaded global aridity index
+
+did some data exploration on why some 1m things have negative vs positive coefficients.
+created poisson glms for each site at the 1m level, made a table of coefficients,
+then joined that to the ancillary data and made some plots 
+(draft_figures/coefficient_explore.png)
+
+script is "extract_ancillary data.R"
+
+takeaway? nothing strong, seems like many of the plots with negative coefficients
+i.e. evidence of biotic resistance at 1m, have: low AI, low elevation, 
+low precip, low slope.... again, nothing strong, just another initial look.
+
+maybe think about what variables would indicate environmental heterogeneity at small scales
+
+another thought - maybe plot unknown %, see if that's having a big effect
+anothe rhtought - maybe assume all unknowns are native and see what that does
+another thought - write an article about how there's too many unknown species
+                  in the neon database for it to be of any use lol
+MARCH 12 2021 ==================================================================
+
+potential explainers
+- soil fertility
+- invasion
+- mean annual precip/temp/etc
+- richeness and total cover were informative
+
+- usda plants api - vs unknowns
+ - usda plants can also grab functional groups
+- more site-level stuff
+
+Main Q at this point
+why NERR relationships positive vs negative?
+site level by default
+
+
+incorporate exotic legacy?
+maybe exotic dominance is a proxy of time since invasion
+calculate total native cover and total invasive cover
+e.g. what is the most dominant exotic species or two, and what their relative cover
+also prevalence (how many plots is it at)
