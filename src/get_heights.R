@@ -3,7 +3,7 @@ library(neonUtilities)
 library(tidyverse)
 library(ggpubr)
 library(vegan)
-# devtools::install("admahood/neondiversity")
+# devtools::install("admahood/neondiveRsity")
 library(neondiversity) 
 options(stringsAsFactors = FALSE)
 

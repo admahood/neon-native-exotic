@@ -2,6 +2,7 @@
 library(sf)
 library(tidyverse)
 library(terra)
+library(neondiveRsity)
 
 neon_plots <- st_read("data/big/All_NEON_TOS_Plots_V8/All_NEON_TOS_Plots_V8/All_NEON_TOS_Plot_Centroids_V8.shp")
 
@@ -16,7 +17,8 @@ neon_clim<-terra::extract(clim_files,
                as(neon_plots, "SpatVector"),
                list=FALSE) %>%
   as_tibble()%>%
-  bind_cols(neon_plots)
+  bind_cols(neon_plots)%>%
+  mutate(latitude = st_coordinates(geometry)[,2])
 
 # glimpse(neon_clim)
 
@@ -28,63 +30,66 @@ ai_file <- "data/big/ai_et0/ai_et0.tif" %>%
   as_tibble() %>%
   bind_cols(neon_clim)
 
-# summary(ai_file)
-
 # adding in some ancillary data to explore the 1m scale - why is it positve vs negative??
-all_scales <- readRDS("data/all_scales.RDS")
+all_scales <- readRDS("data/all_scales.RDS") 
 
-one_meter <- all_scales %>%
-  filter(scale == "1m") %>%
-  group_nest(site) %>%
-  mutate(model = map(data, ~glm(nspp_exotic ~ nspp_native, family="quasipoisson",
-                                data=.x)))
+plot_level %>% is.na()%>% any()
+plot_level_w_climate<- left_join(plot_level, ai_file %>% 
+            filter(!is.na(PRISM_tmean_30yr_normal_4kmM2_annual_bil)) %>%
+            dplyr::select(-vertUncert, -horzUncert, -gpsLogs, -plotPdop, -plotHdop)) %>% 
+  filter(!is.na(aspect)) %>%
+  filter(!is.na(ai_et0)) %>%
+  mutate(invaded = as.factor(invaded),
+         nlcdClass = as.factor(nlcdClass))
 
-res_tib<- data.frame("siteID" = NA, "coef" = NA)
-for(i in 1:length(unique(all_scales$site))){
-  mod <- pluck(one_meter$model,i) 
-  coef<- coefficients(mod)[2]
-  site <- pluck(one_meter$site,i)
+sp1_level_w_climate<- left_join(sp_level_1, ai_file %>% 
+                                   filter(!is.na(PRISM_tmean_30yr_normal_4kmM2_annual_bil)) %>%
+                                   dplyr::select(-vertUncert, -horzUncert, -gpsLogs, -plotPdop, -plotHdop)) %>% 
+  filter(!is.na(aspect)) %>%
+  filter(!is.na(ai_et0)) %>%
+  filter(invaded != 0) %>%
+  mutate(invaded = as.factor(invaded),
+         nlcdClass = as.factor(nlcdClass),
+         nc= rnorm(n=nrow(.))) %>% # randomly selecting subplots
+  group_by(plotID) %>%
+  filter(nc == min(nc)) %>%
+  ungroup() %>%
+  dplyr::select(-nc)
+
+# models ===================
+library(randomForest)
+
+rf1<-randomForest(invaded ~ nspp_native + ai_et0 +PRISM_ppt_30yr_normal_4kmM2_annual_bil +
+      latitude + PRISM_tmean_30yr_normal_4kmM2_annual_bil+
+      PRISM_vpdmax_30yr_normal_4kmM2_annual_bil + elevation +nlcdClass,
+    data = plot_level_w_climate)
+
+randomForest::varImpPlot(rf1)  
   
-  res_tib[i, 1] <- site
-  res_tib[i, 2] <- coef
-}
+rf2<-randomForest(invaded ~ nspp_native + ai_et0 +PRISM_ppt_30yr_normal_4kmM2_annual_bil +
+                    latitude + PRISM_tmean_30yr_normal_4kmM2_annual_bil+
+                    PRISM_vpdmax_30yr_normal_4kmM2_annual_bil + elevation +nlcdClass,
+                  data = sp1_level_w_climate)
 
-d <- left_join(ai_file, res_tib) %>%
-  mutate(lat = st_coordinates(geometry)[,2]) %>%
-  group_by(siteID) %>%
-  summarise(coef = first(coef),
-            aridity_index = mean(ai_et0, na.rm=TRUE),
-            MAP = mean(PRISM_ppt_30yr_normal_4kmM2_annual_bil, na.rm=TRUE),
-            MAT = mean(PRISM_tmean_30yr_normal_4kmM2_annual_bil, na.rm=TRUE),
-            MA_VPD_max = mean(PRISM_vpdmax_30yr_normal_4kmM2_annual_bil, na.rm=TRUE),
-            MA_VPD_min = mean(PRISM_vpdmin_30yr_normal_4kmM2_annual_bil, na.rm=TRUE),
-            elevation = mean(elevation, na.rm=TRUE),
-            latitude = mean(lat),
-            slope = mean(slope)) %>%
-  ungroup()%>%
-  pivot_longer(names_to = "variable", values_to = "value", cols = names(.)[3:ncol(.)])
+randomForest::varImpPlot(rf2)  
 
-d1 <- left_join(ai_file, res_tib) %>%
-  group_by(siteID) %>%
-  summarise(coef = first(coef),
-            nlcd = first(nlcdClass),
-            soil = first(soilOrder)) %>%
-  ungroup()%>%
-  pivot_longer(names_to = "variable", values_to = "value", cols = names(.)[3:ncol(.)])
+plot(rf1)
+plot(rf2)
 
-ggplot(d, aes(x=value, y=coef)) +
-  geom_hline(yintercept = 0, lty = 2, color = "grey")+
-  geom_point(alpha=0.5) +
-  # geom_smooth(method = "lm") +
-  facet_wrap(~variable, scales = "free") +
-  ylab("Coefficient of glm(nspp_exotic ~ nspp_native) for 1m subplots") +
-  ggsave("draft_figures/coefficient_explore.png")
+# kind of interesting how the two tests aren't super similar
 
-ggplot(d1, aes(y=value, x=coef)) +
-  geom_boxplot() +
-  facet_wrap(~variable, scales = "free")
+control = party::ctree_control(nresample = 99999,
+                               testtype = "MonteCarlo")
+ctree1<- party::ctree(invaded ~ nspp_native + ai_et0 +PRISM_ppt_30yr_normal_4kmM2_annual_bil +
+               latitude + PRISM_tmean_30yr_normal_4kmM2_annual_bil+
+               PRISM_vpdmax_30yr_normal_4kmM2_annual_bil + elevation +nlcdClass,
+             data = sp1_level_w_climate)
 
-ggplot(d, aes(x=PRISM_ppt_30yr_normal_4kmM2_annual_bil, y=coef)) +
-  geom_point()
-ggplot(d, aes(x=PRISM_ppt_30yr_normal_4kmM2_annual_bil, y=coef)) +
-  geom_point()
+plot(ctree1)
+
+ctree2<- party::ctree(invaded ~ nspp_native + ai_et0 +PRISM_ppt_30yr_normal_4kmM2_annual_bil +
+                        latitude + PRISM_tmean_30yr_normal_4kmM2_annual_bil+
+                        PRISM_vpdmax_30yr_normal_4kmM2_annual_bil + elevation +nlcdClass,
+                      data = plot_level_w_climate)
+plot(ctree2)
+

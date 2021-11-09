@@ -1,0 +1,187 @@
+---
+title: "Exploratory Analysis"
+author: "Adam Mahood"
+date: "8/27/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message=F, warning=F)
+
+library(tidyverse)
+```
+
+
+```{r data_import}
+# these are created in src/diversity_data_prep.R
+
+plot_level <- readRDS("data/plot_level.RDS")
+sp_level_1<-readRDS("data/sp_level_1.RDS")
+site_level <- readRDS("data/site_level.RDS")
+
+all_scales <- bind_rows(sp_level_1, site_level, plot_level)
+```
+
+
+# Exploratory plots: Effects of # exotic species
+
+It seems like, instead of trying to figure out all of the unknowns, it might be better to just make the assumption that problematic exotic plants will not be unknown. So if we go with this assumption, the unknown plants will likely be a combination of mostly native plants, and not currently problematic exotics. 
+
+## Species counts
+
+```{r counts}
+
+ggplot(all_scales, aes(x = nspp_notexotic, y = nspp_exotic)) +
+  geom_jitter(alpha = 0.1) +
+  geom_smooth(method = "glm", method.args = list(family = "quasipoisson")) +
+  facet_wrap(~scale, scales = "free")
+
+ggplot(all_scales, aes(y = nspp_notexotic, x = as.factor(invaded))) +
+  geom_boxplot() +
+  facet_wrap(~scale, scales = "free")
+
+```
+
+## Alpha diversity
+
+```{r diversity}
+ggplot(all_scales, aes(x = shannon_notexotic, y = shannon_exotic)) +
+  geom_jitter(alpha = 0.1) +
+  geom_smooth() +
+  facet_wrap(~scale, scales = "free")
+
+ggplot(all_scales, aes(x = evenness_notexotic, y = evenness_exotic)) +
+  geom_jitter(alpha = 0.1) +
+  geom_smooth() +
+  facet_wrap(~scale, scales = "free")
+
+ggplot(all_scales, aes(y = shannon_notexotic, x = as.factor(invaded))) +
+  geom_boxplot() +
+  facet_wrap(~scale, scales = "free")
+ggplot(all_scales, aes(y = evenness_notexotic, x = as.factor(invaded))) +
+  geom_boxplot() +
+  facet_wrap(~scale, scales = "free")
+
+ggplot(all_scales, aes(y = shannon_total, x = as.factor(invaded))) +
+  geom_boxplot() +
+  facet_wrap(~scale, scales = "free")
+ggplot(all_scales, aes(y = evenness_total, x = as.factor(invaded))) +
+  geom_boxplot() +
+  facet_wrap(~scale, scales = "free")
+```
+
+## Beta diversity
+
+```{r beta_diversity}
+ggplot(all_scales %>% filter(scale != "1m"), aes(x = nspp_exotic, y = turnover)) +
+  geom_jitter(alpha = 0.1) +
+  geom_smooth(method = "lm") +
+  facet_wrap(~scale, scales = "free")
+
+ggplot(all_scales %>% filter(scale != "1m"), aes(x = nspp_exotic, y = nestedness)) +
+  geom_jitter(alpha = 0.1) +
+  geom_smooth(method = "lm") +
+  facet_wrap(~scale, scales = "free")
+
+ggplot(all_scales %>% filter(scale != "1m"), aes(y = nestedness, x = as.factor(invaded))) +
+  geom_boxplot() +
+  facet_wrap(~scale, scales = "free")
+
+ggplot(all_scales %>% filter(scale != "1m"), aes(y = turnover, x = as.factor(invaded))) +
+  geom_boxplot() +
+  facet_wrap(~scale, scales = "free")
+
+```
+
+## family diversity
+
+```{r fam_diversity}
+ggplot(all_scales, aes(x = nspp_exotic, y = nfamilies)) +
+  geom_jitter(alpha = 0.1) +
+  geom_smooth(method = "lm") +
+  facet_wrap(~scale, scales = "free")
+
+ggplot(all_scales, aes(x = nspp_exotic, y = shannon_family)) +
+  geom_jitter(alpha = 0.1) +
+  geom_smooth(method = "lm") +
+  facet_wrap(~scale, scales = "free")
+
+ggplot(all_scales , aes(y = nfamilies, x = as.factor(invaded))) +
+  geom_boxplot() +
+  facet_wrap(~scale, scales = "free")
+```
+
+# Exploratory plots: Effects of exotic cover
+
+## Species counts
+
+```{r countsrc}
+
+ggplot(all_scales, aes(y = nspp_notexotic, x = rel_cover_exotic)) +
+  geom_jitter(alpha = 0.1) +
+  geom_smooth(method = "glm", method.args = list(family = "quasipoisson")) +
+  facet_wrap(~scale, scales = "free")
+
+ggplot(all_scales, aes(y = nspp_notexotic, x = as.factor(invaded))) +
+  geom_boxplot() +
+  facet_wrap(~scale, scales = "free")
+
+```
+
+## Alpha diversity
+
+```{r diversityrc}
+ggplot(all_scales, aes(y = shannon_notexotic, x = rel_cover_exotic)) +
+  geom_jitter(alpha = 0.1) +
+  geom_smooth() +
+  facet_wrap(~scale, scales = "free")
+
+ggplot(all_scales, aes(y = evenness_notexotic, x = rel_cover_exotic)) +
+  geom_jitter(alpha = 0.1) +
+  geom_smooth() +
+  facet_wrap(~scale, scales = "free")
+
+ggplot(all_scales, aes(y = shannon_total, x = rel_cover_exotic)) +
+  geom_jitter(alpha = 0.1) +
+  geom_smooth() +
+  facet_wrap(~scale, scales = "free")
+
+ggplot(all_scales, aes(y = evenness_total, x = rel_cover_exotic)) +
+  geom_jitter(alpha = 0.1) +
+  geom_smooth() +
+  facet_wrap(~scale, scales = "free")
+
+
+```
+
+## Beta diversity
+
+```{r beta_diversityrc}
+ggplot(all_scales %>% filter(scale != "1m"), aes(x = rel_cover_exotic, y = turnover)) +
+  geom_jitter(alpha = 0.1) +
+  geom_smooth() +
+  facet_wrap(~scale, scales = "free")
+
+ggplot(all_scales %>% filter(scale != "1m"), aes(x = rel_cover_exotic, y = nestedness)) +
+  geom_jitter(alpha = 0.1) +
+  geom_smooth() +
+  facet_wrap(~scale, scales = "free")
+
+```
+
+## family diversity
+
+```{r fam_diversityrc}
+ggplot(all_scales, aes(x = rel_cover_exotic, y = nfamilies)) +
+  geom_jitter(alpha = 0.1) +
+  geom_smooth(method = "lm") +
+  facet_wrap(~scale, scales = "free")
+
+ggplot(all_scales, aes(x = rel_cover_exotic, y = shannon_family)) +
+  geom_jitter(alpha = 0.1) +
+  geom_smooth(method = "lm") +
+  facet_wrap(~scale, scales = "free")
+
+```
+
+
