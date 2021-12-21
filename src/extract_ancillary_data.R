@@ -59,12 +59,64 @@ sp1_level_w_climate<- left_join(sp_level_1, ai_file %>%
 # models ===================
 library(randomForest)
 
+lut_vars<-c("PRISM_vpdmax_30yr_normal_4kmM2_annual_bil" = "MAVPD",
+            "nlcdClass" = "NLCD",
+            "PRISM_tmean_30yr_normal_4kmM2_annual_bil" = "MAT",
+            "PRISM_ppt_30yr_normal_4kmM2_annual_bil" = "MAP",
+            "latitude" = "Latitude",
+            "elevation" = "Elevation",
+            "ai_et0" = "Aridity",
+            "nspp_native" = "Native Richness",
+            "nspp_notexotic" = "Native Richness")
+
+ggrf<- function(rf, title){
+  require(ggplot2)
+  require(dplyr)
+  require(ggpubr)
+  
+  if(rf$type == "classification"){
+    imp <- randomForest::importance(rf) %>%
+      as_tibble(rownames = "variable") %>%
+      arrange((MeanDecreaseGini)) %>%
+      mutate(variable = lut_vars[variable],
+             variable = fct_inorder(variable))
+      
+    acc <- 1-mean(rf$confusion[1,3], rf$confusion[2,3])
+    acc<- paste("Accuracy is roughly:", round(acc, 2))
+    
+    ggplot(imp, aes(x=MeanDecreaseGini, y = variable)) +
+      geom_point(size=3) +
+      xlab("Variable Importance") +
+      ggtitle(label = title, subtitle = acc) +
+      theme_pubclean()
+    
+  }else{
+    imp <- randomForest::importance(rf) %>%
+      as_tibble(rownames = "variable") %>%
+      arrange((IncNodePurity)) %>%
+      mutate(variable = lut_vars[variable],
+             variable = fct_inorder(variable))
+    
+    acc<- rf$rsq %>% mean()
+    acc<- paste("Accuracy is roughly:", round(acc, 2))
+    
+    ggplot(imp, aes(x=IncNodePurity, y = variable)) +
+      geom_point(size=3) +
+      xlab("Variable Importance") +
+      ggtitle(label = title, subtitle = acc)+
+      theme_pubclean()
+    
+  }
+}
+
 rf1<-randomForest(invaded ~ nspp_native + ai_et0 +PRISM_ppt_30yr_normal_4kmM2_annual_bil +
       latitude + PRISM_tmean_30yr_normal_4kmM2_annual_bil+
       PRISM_vpdmax_30yr_normal_4kmM2_annual_bil + elevation +nlcdClass,
     data = plot_level_w_climate)
 
 randomForest::varImpPlot(rf1)  
+p1<-ggrf(rf1, title = "Plot level, predicting invasion")
+
   
 rf2<-randomForest(invaded ~ nspp_native + ai_et0 +PRISM_ppt_30yr_normal_4kmM2_annual_bil +
                     latitude + PRISM_tmean_30yr_normal_4kmM2_annual_bil+
@@ -72,24 +124,35 @@ rf2<-randomForest(invaded ~ nspp_native + ai_et0 +PRISM_ppt_30yr_normal_4kmM2_an
                   data = sp1_level_w_climate)
 
 randomForest::varImpPlot(rf2)  
+p2<-ggrf(rf2, title = "1m subplot level, predicting invasion")
 
 plot(rf1)
 plot(rf2)
 
-# kind of interesting how the two tests aren't super similar
+rf3<-randomForest(nspp_exotic ~ nspp_notexotic + ai_et0 +PRISM_ppt_30yr_normal_4kmM2_annual_bil +
+                    latitude + PRISM_tmean_30yr_normal_4kmM2_annual_bil+
+                    PRISM_vpdmax_30yr_normal_4kmM2_annual_bil + elevation +nlcdClass,
+                  data = plot_level_w_climate)
 
-control = party::ctree_control(nresample = 99999,
-                               testtype = "MonteCarlo")
-ctree1<- party::ctree(invaded ~ nspp_native + ai_et0 +PRISM_ppt_30yr_normal_4kmM2_annual_bil +
-               latitude + PRISM_tmean_30yr_normal_4kmM2_annual_bil+
-               PRISM_vpdmax_30yr_normal_4kmM2_annual_bil + elevation +nlcdClass,
-             data = sp1_level_w_climate)
+randomForest::varImpPlot(rf3)  
+p3<-ggrf(rf3, title = "Plot level, predicting nspp_exotic")
 
-plot(ctree1)
+rf4<-randomForest(nspp_exotic ~ nspp_notexotic + ai_et0 +PRISM_ppt_30yr_normal_4kmM2_annual_bil +
+                    latitude + PRISM_tmean_30yr_normal_4kmM2_annual_bil+
+                    PRISM_vpdmax_30yr_normal_4kmM2_annual_bil + elevation +nlcdClass,
+                  data = sp1_level_w_climate)
 
-ctree2<- party::ctree(invaded ~ nspp_native + ai_et0 +PRISM_ppt_30yr_normal_4kmM2_annual_bil +
-                        latitude + PRISM_tmean_30yr_normal_4kmM2_annual_bil+
-                        PRISM_vpdmax_30yr_normal_4kmM2_annual_bil + elevation +nlcdClass,
-                      data = plot_level_w_climate)
-plot(ctree2)
+randomForest::varImpPlot(rf4)  
+
+p4<-ggrf(rf4, title = "1m supbplot level, predicting nspp_exotic")
+
+plot(rf3)
+plot(rf4)
+
+ggarrange(p1,p2,p3,p4, nrow = 2, ncol=2) -> all_rfs
+
+ggsave(all_rfs, filename="draft_figures/all_rfs.png", width=10, height=10)
+
+
+
 
