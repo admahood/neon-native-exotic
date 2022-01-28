@@ -1,5 +1,6 @@
 # Script for running a number of NERR related analyses
 library(car)
+library(scales)
 
 # Things to account for:
 # Are there uninvaded plots at the site
@@ -7,102 +8,107 @@ library(car)
 # Evaluate number of Unknowns
 site_dat=read.csv(file = "data/NEON_Field_Site_Metadata.csv")
 # site_dat$main_nlcd=gsub(x = paste(site_dat$field_dominant_nlcd_classes),pattern = "\\|.+",replacement = "")
-
-for (ss in 1:length(unique(prev_year_div$site))){
-  print(ss)
-print(ggplot(prev_year_div[prev_year_div$site==unique(prev_year_div$site)[ss]&prev_year_div$scale!="plot",], 
-       aes(x = nspp_native, y=next_nspp_exotic, color = scale))+
-  # geom_point(alpha=0.5)+
-  geom_smooth(method = "glm", method.args = list(family = "quasipoisson")) +
-  theme_classic()+
-  theme(legend.position = "none")+
-  scale_color_viridis_d(option = "B") +
-  geom_hline(yintercept = 1, lty=2, color = "grey80")+
-  scale_y_continuous(breaks = c(0,1,2,4,6,8))+
-  xlab("Native Species Richness (Uninvaded Sites, Year 1)")+
-  ylab("Exotic Species Richness; Year 2"))
-}
-
-
-for (ss in 1:length(unique(all_scales$site))){
-  print(ss)
-  print(ggplot(all_scales[all_scales$site==unique(all_scales$site)[ss],], 
-               aes(x = nspp_native, y=nspp_exotic, color = scale))+
-          # geom_point(alpha=0.5)+
-          geom_smooth(method = "glm", method.args = list(family = "quasipoisson")) +
-          theme_classic()+
-          theme(legend.position = "none")+
-          scale_color_viridis_d(option = "B") +
-          geom_hline(yintercept = 1, lty=2, color = "grey80")+
-          scale_y_continuous(breaks = c(0,1,2,4,6,8))+
-          xlab("Native Species Richness")+
-          ylab("Exotic Species Richness")+
-          ggtitle(unique(all_scales$site)[ss]) +
-          theme(plot.title = element_text(hjust = 0.5))
-  )
-}
-
-
-
-
-
-ggplot(all_scales[all_scales$scale=="1m",],
-       aes(x = nspp_native, y=nspp_exotic, color = site)) +
-  geom_smooth(method = "glm", method.args = list(family = "quasipoisson")) +
-  theme_classic() +
-  theme(legend.position = c(1,0),
-        legend.justification = c(1,0))+
-  scale_color_viridis_d(option = "B") +
-  xlab("Native Species Richness") +
-  ylab("Exotic Species Richness") 
-
-
-
-#1m by site
-par(mfrow=c(5,5))
-for (ss in 1:length(unique(all_scales$site))){
-  print(ss)
-  print(ggplot(all_scales[all_scales$scale=="1m"&all_scales$site==unique(all_scales$site)[ss],],
-       aes(x = nspp_native, y=nspp_exotic, color = site)) +
-  geom_smooth(method = "glm", method.args = list(family = "quasipoisson")) +
-  theme_classic() +
-  theme(legend.position = c(1,0),
-        legend.justification = c(1,0))+
-  scale_color_viridis_d(option = "B") +
-  xlab("Native Species Richness") +
-  ylab("Exotic Species Richness") 
-
-)
-}
-
-ss=12
-print(all_scales[all_scales$scale=="1m"&all_scales$site==unique(all_scales$site)[ss]&all_scales$year==2018,c(3,4,5,6,7,10)],n=Inf)
-plot(all_scales$nspp_exotic[all_scales$scale=="1m"&all_scales$site==unique(all_scales$site)[ss]&all_scales$year==2018]~all_scales$nspp_total[all_scales$scale=="1m"&all_scales$site==unique(all_scales$site)[ss]&all_scales$year==2018])
-
-
-
-plot(all_scales$nspp_exotic[all_scales$scale=="1m"]~all_scales$nspp_total[all_scales$scale=="1m"])
-summary(lm(all_scales$nspp_exotic[all_scales$scale=="1m"]~all_scales$nspp_total[all_scales$scale=="1m"]))
-abline(lm(all_scales$nspp_exotic[all_scales$scale=="1m"]~all_scales$nspp_total[all_scales$scale=="1m"]),col=2,lwd=3)
-
-for (ss in 1:length(unique(all_scales$site))){
-  abline(lm(all_scales$nspp_exotic[all_scales$scale=="1m"&all_scales$site==unique(all_scales$site)[ss]]~all_scales$nspp_total[all_scales$scale=="1m"&all_scales$site==unique(all_scales$site)[ss]]),col=ss)
-}
-
-par(mfrow=c(3,3))
-for (ss in 1:length(unique(all_scales$site))){
-  plot(all_scales$nspp_exotic[all_scales$scale=="1m"&all_scales$site==unique(all_scales$site)[ss]]~all_scales$nspp_total[all_scales$scale=="1m"&all_scales$site==unique(all_scales$site)[ss]],main=unique(all_scales$site)[ss])
-  abline(lm(all_scales$nspp_exotic[all_scales$scale=="1m"&all_scales$site==unique(all_scales$site)[ss]]~all_scales$nspp_total[all_scales$scale=="1m"&all_scales$site==unique(all_scales$site)[ss]]),col=ss)
-  
-}
-
+# 
+# for (ss in 1:length(unique(prev_year_div$site))){
+#   print(ss)
+# print(ggplot(prev_year_div[prev_year_div$site==unique(prev_year_div$site)[ss]&prev_year_div$scale!="plot",], 
+#        aes(x = nspp_native, y=next_nspp_exotic, color = scale))+
+#   # geom_point(alpha=0.5)+
+#   geom_smooth(method = "glm", method.args = list(family = "quasipoisson")) +
+#   theme_classic()+
+#   theme(legend.position = "none")+
+#   scale_color_viridis_d(option = "B") +
+#   geom_hline(yintercept = 1, lty=2, color = "grey80")+
+#   scale_y_continuous(breaks = c(0,1,2,4,6,8))+
+#   xlab("Native Species Richness (Uninvaded Sites, Year 1)")+
+#   ylab("Exotic Species Richness; Year 2"))
+# }
+# 
+# 
+# for (ss in 1:length(unique(all_scales$site))){
+#   print(ss)
+#   print(ggplot(all_scales[all_scales$site==unique(all_scales$site)[ss],], 
+#                aes(x = nspp_native, y=nspp_exotic, color = scale))+
+#           # geom_point(alpha=0.5)+
+#           geom_smooth(method = "glm", method.args = list(family = "quasipoisson")) +
+#           theme_classic()+
+#           theme(legend.position = "none")+
+#           scale_color_viridis_d(option = "B") +
+#           geom_hline(yintercept = 1, lty=2, color = "grey80")+
+#           scale_y_continuous(breaks = c(0,1,2,4,6,8))+
+#           xlab("Native Species Richness")+
+#           ylab("Exotic Species Richness")+
+#           ggtitle(unique(all_scales$site)[ss]) +
+#           theme(plot.title = element_text(hjust = 0.5))
+#   )
+# }
+# 
+# 
+# 
+# 
+# 
+# ggplot(all_scales[all_scales$scale=="1m",],
+#        aes(x = nspp_native, y=nspp_exotic, color = site)) +
+#   geom_smooth(method = "glm", method.args = list(family = "quasipoisson")) +
+#   theme_classic() +
+#   theme(legend.position = c(1,0),
+#         legend.justification = c(1,0))+
+#   scale_color_viridis_d(option = "B") +
+#   xlab("Native Species Richness") +
+#   ylab("Exotic Species Richness") 
+# 
+# 
+# 
+# #1m by site
+# par(mfrow=c(5,5))
+# for (ss in 1:length(unique(all_scales$site))){
+#   print(ss)
+#   print(ggplot(all_scales[all_scales$scale=="1m"&all_scales$site==unique(all_scales$site)[ss],],
+#        aes(x = nspp_native, y=nspp_exotic, color = site)) +
+#   geom_smooth(method = "glm", method.args = list(family = "quasipoisson")) +
+#   theme_classic() +
+#   theme(legend.position = c(1,0),
+#         legend.justification = c(1,0))+
+#   scale_color_viridis_d(option = "B") +
+#   xlab("Native Species Richness") +
+#   ylab("Exotic Species Richness") 
+# 
+# )
+# }
+# 
+# ss=12
+# print(all_scales[all_scales$scale=="1m"&all_scales$site==unique(all_scales$site)[ss]&all_scales$year==2018,c(3,4,5,6,7,10)],n=Inf)
+# plot(all_scales$nspp_exotic[all_scales$scale=="1m"&all_scales$site==unique(all_scales$site)[ss]&all_scales$year==2018]~all_scales$nspp_total[all_scales$scale=="1m"&all_scales$site==unique(all_scales$site)[ss]&all_scales$year==2018])
+# 
+# 
+# 
+# plot(all_scales$nspp_exotic[all_scales$scale=="1m"]~all_scales$nspp_total[all_scales$scale=="1m"])
+# summary(lm(all_scales$nspp_exotic[all_scales$scale=="1m"]~all_scales$nspp_total[all_scales$scale=="1m"]))
+# abline(lm(all_scales$nspp_exotic[all_scales$scale=="1m"]~all_scales$nspp_total[all_scales$scale=="1m"]),col=2,lwd=3)
+# 
+# for (ss in 1:length(unique(all_scales$site))){
+#   abline(lm(all_scales$nspp_exotic[all_scales$scale=="1m"&all_scales$site==unique(all_scales$site)[ss]]~all_scales$nspp_total[all_scales$scale=="1m"&all_scales$site==unique(all_scales$site)[ss]]),col=ss)
+# }
+# 
+# par(mfrow=c(3,3))
+# for (ss in 1:length(unique(all_scales$site))){
+#   plot(all_scales$nspp_exotic[all_scales$scale=="1m"&all_scales$site==unique(all_scales$site)[ss]]~all_scales$nspp_total[all_scales$scale=="1m"&all_scales$site==unique(all_scales$site)[ss]],main=unique(all_scales$site)[ss])
+#   abline(lm(all_scales$nspp_exotic[all_scales$scale=="1m"&all_scales$site==unique(all_scales$site)[ss]]~all_scales$nspp_total[all_scales$scale=="1m"&all_scales$site==unique(all_scales$site)[ss]]),col=ss)
+#   
+# }
+# 
 
 # Calculate local scale NERR for each site to compare between habitat types etc.
 
 site_exotics=aggregate(all_sub_plot_div_data$nspp_exotic,by = list(all_sub_plot_div_data$site),FUN=sum)
 names(site_exotics)=c("site","exotic_sum")
-site_mean_nat=aggregate(all_sub_plot_div_data$nspp_native,by = list(all_sub_plot_div_data$site),FUN=mean)
+# site_mean_nat=aggregate(all_sub_plot_div_data$nspp_native,by = list(all_sub_plot_div_data$site),FUN=mean)
+# names(site_mean_nat)=c("site","native_mean")
+
+site_mean_nat=aggregate(sp_level_1$nspp_native,by = list(sp_level_1$site),FUN=mean)
 names(site_mean_nat)=c("site","native_mean")
+
+
 
 site_unk=aggregate(all_sub_plot_div_data$nspp_unk,by = list(all_sub_plot_div_data$site),FUN=sum)
 names(site_unk)=c("site","unk_sum")
@@ -112,15 +118,15 @@ names(site_cover)=c("site","cover_mean")
 
 
 
-aggregate(all_scales$nspp_exotic[all_scales$scale=="1m"&all_scales$year==2018],by=list(all_scales$site[all_scales$scale=="1m"&all_scales$year==2018]),FUN=sum)
-
-head(all_sub_plot_div_data)
-head(all_scales[all_scales$scale=="1m"&all_scales$year==2018&all_scales$plotID=="BART_006",])
-
-
-all_sub_plot_div_data[which(all_sub_plot_div_data$plotID=="BART_006"),]
-all_scales[all_scales$scale=="1m"&all_scales$year==2018&all_scales$plotID=="BART_006",]
-
+# aggregate(all_scales$nspp_exotic[all_scales$scale=="1m"&all_scales$year==2018],by=list(all_scales$site[all_scales$scale=="1m"&all_scales$year==2018]),FUN=sum)
+# 
+# head(all_sub_plot_div_data)
+# head(all_scales[all_scales$scale=="1m"&all_scales$year==2018&all_scales$plotID=="BART_006",])
+# 
+# 
+# all_sub_plot_div_data[which(all_sub_plot_div_data$plotID=="BART_006"),]
+# all_scales[all_scales$scale=="1m"&all_scales$year==2018&all_scales$plotID=="BART_006",]
+# 
 
 use_sites=site_exotics$site[which(site_exotics$exotic_sum>0)]
 inv_site_sub_plot_div_data=all_sub_plot_div_data[which(all_sub_plot_div_data$site%in%use_sites),]
