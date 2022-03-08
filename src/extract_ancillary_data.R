@@ -1,7 +1,7 @@
 # extract raster data to neon plots
 library(sf)
 library(tidyverse)
-library(terra)
+# library(terra)
 library(neondiveRsity)
 
 neon_plots <- st_read("data/big/All_NEON_TOS_Plots_V8/All_NEON_TOS_Plots_V8/All_NEON_TOS_Plot_Centroids_V8.shp")
@@ -11,7 +11,7 @@ neon_plots <- st_read("data/big/All_NEON_TOS_Plots_V8/All_NEON_TOS_Plots_V8/All_
 clim_files <- list.files("data/prism_normals", 
                          pattern = "bil.bil$",
                          full.names = TRUE)%>%
-  terra::rast()
+  # terra::rast()
 
 neon_clim<-terra::extract(clim_files,
                as(neon_plots, "SpatVector"),

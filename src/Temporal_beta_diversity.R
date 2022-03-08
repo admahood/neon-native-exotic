@@ -99,57 +99,69 @@ abline(lm(site_mean_div$mean_beta~site_mean_div$mean_nat),col=2)
 summary(lm(site_mean_div$mean_beta~site_mean_div$mean_nat))
 
 
-
+# pdf("draft_figures/div_temp_turnover_with sites.pdf",height=5,width=5)
 par(mfrow=c(1,2),mar=c(5,5,2,2))
 # Subplot scale turnover
 pred_var=beta_df$subplot_mean_alpha
 resp_var=beta_df$subplot_mean_beta
-mod=lm(resp_var~pred_var)  
+mod=lm(resp_var~pred_var)
 
-plot_with_conf(pred_var,resp_var,min_range = floor(min(pred_var,na.rm = TRUE)),max_range = ceiling(max(pred_var,na.rm = TRUE)),main = "",plot_type = "point",ylab="Temporal turnover", xlab="Subplot species richness",conf_col=2,cex.lab=1.4,cex.axis=1.35)
+# mod=lmer(subplot_mean_beta~subplot_mean_alpha+(1|site),data=beta_df)
 
-# Site level means
-pred_var=site_mean_div$mean_nat
-resp_var=site_mean_div$mean_beta
-mod=lm(resp_var~pred_var)  
-
-plot_with_conf(pred_var,resp_var,min_range = floor(min(pred_var,na.rm = TRUE)),max_range = ceiling(max(pred_var,na.rm = TRUE)),main = "",plot_type = "point",ylab="Mean subplot temporal turnover", xlab="Site species richness",conf_col=2,cex.lab=1.4,cex.axis=1.35)
-
-
-
-
-par(mfrow=c(4,4),mar=c(5,5,2,2))
+plot_with_conf(pred_var,resp_var,mod=mod,min_range = floor(min(pred_var,na.rm = TRUE)),max_range = ceiling(max(pred_var,na.rm = TRUE)),main = "",plot_type = "point",ylab="Temporal turnover", xlab="Subplot species richness",conf_col=2,cex.lab=1.4,cex.axis=1.35)
+# dev.off()
+# 
+# # Site level means
+# pred_var=site_mean_div$mean_nat
+# resp_var=site_mean_div$mean_beta
+# mod=lm(resp_var~pred_var)  
+# 
+# plot_with_conf(pred_var,resp_var,min_range = floor(min(pred_var,na.rm = TRUE)),max_range = ceiling(max(pred_var,na.rm = TRUE)),main = "",plot_type = "point",ylab="Mean subplot temporal turnover", xlab="Site species richness",conf_col=2,cex.lab=1.4,cex.axis=1.35)
+# 
+# 
+# 
+# 
+# par(mfrow=c(4,4),mar=c(5,5,2,2))
 
 
 # xx=plot_with_conf(pred_var,resp_var,min_range = floor(min(pred_var,na.rm = TRUE)),max_range = ceiling(max(pred_var,na.rm = TRUE)),plot_type = "only_conf",ylab="Temporal turnover", xlab="Subplot species richness",conf_col=2,cex.lab=1.4,cex.axis=1.35,pt_col_set = ss)
 
+# pdf("draft_figures/div_temp_turnover_with sites.pdf",height=5,width=5)
+par(mfrow=c(1,1),mar=c(5,5,2,2))
 
-plot(beta_df$subplot_mean_beta~beta_df$subplot_mean_alpha,ylab="Temporal turnover", xlab="Subplot species richness")
+plot(beta_df$subplot_mean_beta~beta_df$subplot_mean_alpha,pch=19,cex=.1,type='p',col="grey60",ylab="Temporal turnover", xlab="Subplot species richness",cex.lab=1.4,cex.axis=1.35)
 site_mean_div$turnover_coef=NA
+# plot_with_conf(pred_var,resp_var,min_range = floor(min(pred_var,na.rm = TRUE)),max_range = ceiling(max(pred_var,na.rm = TRUE)),main = "",plot_type = "only_conf",ylab="Temporal turnover", xlab="Subplot species richness",conf_col=2,cex.lab=1.4,cex.axis=1.35)
 
 
 # separate temporal turnover by site
 for(ss in 1:nrow(sites)){
-  par(new=T)
+  # par(new=T)
   pred_var=beta_df$subplot_mean_alpha[which(beta_df$site==sites$site[ss])]
   resp_var=beta_df$subplot_mean_beta[which(beta_df$site==sites$site[ss])]
   mod=lm(resp_var~pred_var)  
   
-  xx=plot_with_conf(pred_var,resp_var,min_range = floor(min(pred_var,na.rm = TRUE)),max_range = ceiling(max(pred_var,na.rm = TRUE)),plot_type = "only_conf",ylab="", xlab="",conf_col=alpha(cb_palette[ceiling(ss/5)],alpha = .75),cex.lab=1.4,cex.axis=1.35,pt_col_set = ss,yaxt="n",xaxt="n")
+  xx=plot_with_conf(pred_var,resp_var,min_range = floor(min(pred_var,na.rm = TRUE)),max_range = ceiling(max(pred_var,na.rm = TRUE)),plot_type = "only_regress",new_plot = FALSE,ylab="", xlab="",conf_col=alpha(cb_palette[ceiling(ss/5)],alpha = .55),cex.lab=1.4,cex.axis=1.35,pt_col_set = ss,yaxt="n",xaxt="n")
   
   # xx=plot_with_conf(pred_var,resp_var,min_range = floor(min(pred_var,na.rm = TRUE)),max_range = ceiling(max(pred_var,na.rm = TRUE)),plot_type = "point",ylab="Temporal turnover", xlab="Subplot species richness",conf_col=2,cex.lab=1.4,cex.axis=1.35,pt_col_set = ss)
   site_mean_div$turnover_coef[which(site_mean_div$site==sites$site[ss])]=xx$coefficients[2,1]
   
-  if(xx$coefficients[2,4]<0.01){
-    mtext(side = 3,text = paste(sites$site[ss], "**"),cex=1.5)
-  } else if(xx$coefficients[2,4]<=0.05){
-    mtext(side = 3,text = paste(sites$site[ss], "*"),cex=1.5)
-  }else {
-    mtext(side = 3,text = paste(sites$site[ss]),cex=1.5)
-}
+#   if(xx$coefficients[2,4]<0.01){
+#     mtext(side = 3,text = paste(sites$site[ss], "**"),cex=1.5)
+#   } else if(xx$coefficients[2,4]<=0.05){
+#     mtext(side = 3,text = paste(sites$site[ss], "*"),cex=1.5)
+#   }else {
+#     mtext(side = 3,text = paste(sites$site[ss]),cex=1.5)
+# }
 }
 
+# par(new=T)
+pred_var=beta_df$subplot_mean_alpha
+resp_var=beta_df$subplot_mean_beta
+mod=lm(resp_var~pred_var)  
+plot_with_conf(pred_var,resp_var,min_range = floor(min(pred_var,na.rm = TRUE)),max_range = ceiling(max(pred_var,na.rm = TRUE)),main = "",plot_type = "only_conf",new_plot = FALSE)
 
+# dev.off()
 
 
 # Compare site coefficients with diversity-invasibility
@@ -163,6 +175,9 @@ abline(lm(NERR_coefs$nat_coef~site_mean_div$turnover_coef[match(NERR_coefs$site,
 summary(lm(NERR_coefs$nat_coef~site_mean_div$turnover_coef[match(NERR_coefs$site,site_mean_div$site)]),col=2)
 
 
+
+# pdf("draft_figures/inv_vs_temp_turnover_across_sites.pdf",height=5,width=5)
+par(mfrow=c(1,1),mar=c(5,5,2,2))
 par(mar=c(5,5,4,2))
 
 resp_var=NERR_coefs$nat_coef
@@ -170,3 +185,4 @@ pred_var=site_mean_div$turnover_coef[match(NERR_coefs$site,site_mean_div$site)]
 plot_with_conf(pred_var,resp_var,min_range = -.04,max_range = .08,main = "",plot_type = "point",ylab="Invasibility coef ", xlab="Stability coef",conf_col=2,cex.lab=1.4,cex.axis=1.35,cex=site_mean_div$mean_nat[match(NERR_coefs$site,site_mean_div$site)]/4,pch=1)
 abline(h=0)
 abline(v=0)
+# dev.off()

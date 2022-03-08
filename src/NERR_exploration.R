@@ -98,6 +98,58 @@ site_dat=read.csv(file = "data/NEON_Field_Site_Metadata.csv")
 # }
 # 
 
+# Whole network div-inv analysis
+plot(all_sub_plot_div_data$nspp_exotic~all_sub_plot_div_data$nspp_native)
+
+
+
+
+# Show separate regressions lines for each site
+
+# separate carbon sequestration by site
+
+# pdf("draft_figures/div_inv_with_sites.pdf",height=5,width=5)
+par(mfrow=c(1,1),mar=c(5,5,2,2))
+
+plot(jitter(all_sub_plot_div_data$nspp_exotic)~jitter(all_sub_plot_div_data$nspp_native,factor = 1.5),pch=19,cex=.1,type='p',col="grey60",ylab="Exotic species richness", xlab="Native species richness",cex.lab=1.4,cex.axis=1.35)
+
+inv_sites=unique(all_sub_plot_div_data$site)
+for(ss in 1:length(inv_sites)){
+  # par(new=T)
+  
+  pred_var=all_sub_plot_div_data$nspp_native[all_sub_plot_div_data$site==inv_sites[ss]]
+  resp_var=all_sub_plot_div_data$nspp_exotic[all_sub_plot_div_data$site==inv_sites[ss]]
+  # mod=lm(resp_var~pred_var)  
+  
+  xx=plot_with_conf(pred_var,resp_var,min_range = floor(min(pred_var,na.rm = TRUE)),max_range = ceiling(max(pred_var,na.rm = TRUE)),plot_type = "only_regress",new_plot = FALSE,ylab="", xlab="",conf_col=alpha(cb_palette[ceiling(ss/5)],alpha = .55),cex.lab=1.4,cex.axis=1.35,pt_col_set = ss,yaxt="n",xaxt="n")
+  
+  
+    # if(xx$coefficients[2,4]<0.01){
+    #   mtext(side = 3,text = paste(inv_sites[ss], "**"),cex=1.5)
+    # } else if(xx$coefficients[2,4]<=0.05){
+    #   mtext(side = 3,text = paste(inv_sites[ss], "*"),cex=1.5)
+    # }else {
+      # mtext(side = 3,text = paste(inv_sites[ss]),cex=1.5)
+  # }
+}
+
+# par(new=T)
+pred_var=all_sub_plot_div_data$nspp_native
+resp_var=all_sub_plot_div_data$nspp_exotic
+mod=lm(resp_var~pred_var)  
+plot_with_conf(pred_var,resp_var,min_range = floor(min(pred_var,na.rm = TRUE)),max_range = ceiling(max(pred_var,na.rm = TRUE)),main = "",plot_type = "only_conf",new_plot = FALSE,conf_col=2)
+
+# dev.off()
+ 
+
+
+
+
+
+
+
+
+
 # Calculate local scale NERR for each site to compare between habitat types etc.
 
 site_exotics=aggregate(all_sub_plot_div_data$nspp_exotic,by = list(all_sub_plot_div_data$site),FUN=sum)
